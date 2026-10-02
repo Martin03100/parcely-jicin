@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Parcely\Support;
 
 /**
- * File cache of gzipped tiles: {dir}/{z}/{x}/{y}.pbf. Empty tiles are stored as zero-length files.
+ * File cache of gzipped tiles: {dir}/{z}/{x}/{y}.pbf.
  * No TTL: the cache is cleared on every data import.
  */
 final class TileCache
@@ -14,7 +14,7 @@ final class TileCache
     {
     }
 
-    /** @return string|null null = miss, '' = empty tile, otherwise gzipped MVT */
+    /** @return string|null gzipped MVT, null on a miss */
     public function get(int $z, int $x, int $y): ?string
     {
         $file = $this->path($z, $x, $y);

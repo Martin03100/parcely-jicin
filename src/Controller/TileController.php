@@ -11,7 +11,7 @@ use Parcely\Support\TileCache;
 /** GET /tiles/{z}/{x}/{y}.pbf */
 final class TileController
 {
-    private const MAX_ZOOM = 22;
+    private const MAX_ZOOM = 16; // the client overzooms above
 
     public function __construct(
         private readonly TileRepository $tiles,
@@ -36,7 +36,9 @@ final class TileController
             $cacheState = 'MISS';
             $raw = $this->tiles->build($z, $x, $y);
             $gz = $raw === '' ? '' : (string) gzencode($raw, 6);
-            $this->cache->put($z, $x, $y, $gz);
+            if ($gz !== '') {
+                $this->cache->put($z, $x, $y, $gz); // empty tiles are not stored: unbounded key space
+            }
         }
 
         // MapLibre treats 204 as an empty tile.

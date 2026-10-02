@@ -8,6 +8,11 @@ SELECT ku_code,
 FROM parcels
 WHERE ku_code IS NOT NULL
 GROUP BY ku_code;
+
+INSERT INTO app_meta (key, value)
+SELECT 'land_types', COALESCE(json_agg(t ORDER BY t), '[]')::text
+FROM (SELECT DISTINCT land_type AS t FROM parcels WHERE land_type IS NOT NULL) d
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;
 COMMIT;
 
 -- Physically order rows by location so tile queries read fewer pages.

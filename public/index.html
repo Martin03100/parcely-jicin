@@ -4,20 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mapa parcel – okres Jičín</title>
+  <meta name="description" content="Katastrální parcely okresu Jičín na mapě (data ČÚZK).">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
-  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"
+        integrity="sha384-MinO0mNliZ3vwppuPOUnGa+iq619pfMhLVUXfC4LHwSCvF9H+6P/KO4Q7qBOYV5V" crossorigin="anonymous">
   <link rel="stylesheet" href="assets/style.css">
-  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer
+          integrity="sha384-SYKAG6cglRMN0RVvhNeBY0r3FYKNOJtznwA0v7B5Vp9tr31xAHsZC0DqkQ/pZDmj" crossorigin="anonymous"></script>
   <script src="assets/app.js" defer></script>
 </head>
 <body>
   <div id="map" role="application" aria-label="Mapa parcel"></div>
 
   <aside id="panel" aria-label="Panel s informacemi">
+    <header>
+      <h1>Parcely okresu Jičín</h1>
+      <p id="stats"></p>
+    </header>
+
     <form id="search" role="search" autocomplete="off">
       <label for="q">Hledat parcelu podle čísla</label>
       <div class="row">
-        <input id="q" name="q" type="search" inputmode="numeric" placeholder="např. 123 nebo 123/4">
+        <input id="q" name="q" type="search" placeholder="např. 123/4 Jičín">
         <button type="submit">Hledat</button>
       </div>
       <ul id="results" hidden></ul>
@@ -29,15 +38,14 @@
         <dt>Katastrální území</dt><dd id="d-ku"></dd>
         <dt>Výměra</dt><dd id="d-area"></dd>
         <dt>Druh pozemku</dt><dd id="d-type"></dd>
-        <dt>Způsob využití</dt><dd id="d-use"></dd>
         <dt>Zdroj dat</dt><dd id="d-source"></dd>
       </dl>
       <a id="d-kn" href="#" target="_blank" rel="noopener noreferrer" hidden>Otevřít v Nahlížení do KN</a>
     </section>
-    <p id="hint">Klikni na parcelu (od přiblížení ~14) nebo ji vyhledej. Při oddálení vidíš jen obrysy katastrálních území.</p>
+    <p id="hint">Parcely se zobrazí po přiblížení mapy. Kliknutím na parcelu zobrazíte její detail.</p>
 
     <details id="legend">
-      <summary>Legenda – druh pozemku</summary>
+      <summary>Legenda</summary>
       <ul></ul>
     </details>
   </aside>

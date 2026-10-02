@@ -26,8 +26,11 @@ body { font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 /* Mobile: panel at the bottom. */
 @media (max-width: 600px) {
-  #panel { top: auto; bottom: 12px; max-height: 45dvh; }
+  #panel { top: auto; bottom: 36px; max-height: 45dvh; }
 }
+
+h1 { margin: 0; font-size: 1.1rem; }
+#stats { margin: 2px 0 12px; color: var(--muted); font-size: .85rem; min-height: 1.2em; }
 
 label { display: block; font-weight: 600; margin-bottom: 6px; }
 .row { display: flex; gap: 6px; }

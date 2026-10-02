@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: parcely
       POSTGRES_PASSWORD: parcely
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro

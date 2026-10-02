@@ -15,6 +15,7 @@ const LAND_COLORS = {
   'ostatní plocha': '#b8b8b8',
 };
 const OTHER_COLOR = '#d0d0d0';
+const SEARCH_LIMIT = 20; // matches the API limit
 
 // Backend URLs relative to the page; without a backend (file://) only the base map is shown.
 const API_BASE = location.href.replace(/[?#].*$/, '').replace(/[^/]*$/, '');
@@ -118,7 +119,7 @@ async function selectParcel(id, { fly = false } = {}) {
     showDetail(p);
     if (fly) map.fitBounds(p.bbox, { padding: 120, maxZoom: 18, duration: 800 });
   } catch (err) {
-    if (err.name !== 'AbortError') $('hint').textContent = `Detail se nepodařilo načíst (${err.message}).`;
+    if (err.name !== 'AbortError') setHint('Detail parcely se nepodařilo načíst.');
   }
 }
 
@@ -127,12 +128,16 @@ function kuText(p) {
   return p.cadastralAreaCode ?? '–';
 }
 
+function setHint(text) {
+  $('hint').textContent = text;
+  $('hint').hidden = false;
+}
+
 function showDetail(p) {
   $('d-label').textContent = p.label;
   $('d-ku').textContent = kuText(p);
   $('d-area').textContent = p.areaM2 === null ? '–' : `${numberFormat.format(p.areaM2)} m²`;
-  $('d-type').textContent = p.landType ?? '–';
-  $('d-use').textContent = p.landUse ?? '–';
+  $('d-type').textContent = p.landType ?? 'neuvedeno';
   $('d-source').textContent = p.source === 'demo' ? 'syntetická demo data' : 'ČÚZK';
   const kn = $('d-kn');
   kn.hidden = !p.knUrl;
@@ -161,65 +166,84 @@ map.on('mouseleave', 'parcels-fill', () => {
 
 // --- search ---
 
+function resultItem(text, onClick) {
+  const li = document.createElement('li');
+  if (!onClick) {
+    li.className = 'empty';
+    li.textContent = text;
+    return li;
+  }
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = text;
+  btn.addEventListener('click', onClick);
+  li.append(btn);
+  return li;
+}
+
 $('search').addEventListener('submit', async (e) => {
   e.preventDefault();
   const list = $('results');
   list.replaceChildren();
+  list.hidden = true;
   const q = $('q').value.trim();
   if (!q) return;
 
   try {
     const res = await fetch(`${API_BASE}api/search?q=${encodeURIComponent(q)}`);
-    const { results, hint } = await res.json();
+    if (res.status === 400) {
+      list.append(resultItem('Zadejte číslo parcely, např. 123/4, st. 56 nebo 123/4 Jičín.'));
+      list.hidden = false;
+      return;
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { results } = await res.json();
     if (results.length === 1) {
-      list.hidden = true;
       selectParcel(results[0].id, { fly: true });
       return;
     }
-    if (results.length === 0) {
-      const li = document.createElement('li');
-      li.className = 'empty';
-      li.textContent = hint ?? 'Nic nenalezeno.';
-      list.append(li);
-    }
+    if (results.length === 0) list.append(resultItem('Nic nenalezeno.'));
     for (const r of results) {
-      const li = document.createElement('li');
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = `${r.label} – k. ú. ${r.cadastralAreaName ?? r.cadastralAreaCode ?? '?'}`;
-      btn.addEventListener('click', () => {
+      const ku = r.cadastralAreaName ?? r.cadastralAreaCode ?? '?';
+      list.append(resultItem(`${r.label} – k. ú. ${ku}`, () => {
         list.hidden = true;
         selectParcel(r.id, { fly: true });
-      });
-      li.append(btn);
-      list.append(li);
+      }));
     }
+    if (results.length === SEARCH_LIMIT) list.append(resultItem(`Zobrazeno prvních ${SEARCH_LIMIT} výsledků.`));
     list.hidden = false;
   } catch {
-    $('hint').textContent = 'Vyhledávání selhalo.';
+    setHint('Vyhledávání selhalo, zkuste to prosím znovu.');
   }
 });
 
 // --- initial view, legend, FPS (?debug) ---
 
+function renderLegend(landTypes) {
+  const ul = $('legend').querySelector('ul');
+  const entries = landTypes.map((t) => [t, LAND_COLORS[t] ?? OTHER_COLOR]);
+  entries.push(['neuvedeno', OTHER_COLOR]);
+  for (const [name, color] of entries) {
+    const li = document.createElement('li');
+    const swatch = document.createElement('i');
+    swatch.style.background = color;
+    li.append(swatch, name);
+    ul.append(li);
+  }
+}
+
 if (HAS_BACKEND) {
   fetch(`${API_BASE}api/meta`)
     .then((r) => r.json())
     .then((meta) => {
+      $('stats').textContent = `${numberFormat.format(meta.parcels)} parcel · ${meta.cadastralAreas} katastrálních území`;
+      renderLegend(meta.landTypes ?? []);
       // keep the view from the URL hash
       if (meta.bounds && !hadHash) map.fitBounds(meta.bounds, { padding: 40, duration: 0 });
     })
     .catch(() => {});
 } else {
-  $('hint').textContent = 'Parcely se načítají ze serveru, spusťte aplikaci přes docker compose.';
-}
-
-for (const [name, color] of Object.entries(LAND_COLORS)) {
-  const li = document.createElement('li');
-  const swatch = document.createElement('i');
-  swatch.style.background = color;
-  li.append(swatch, name);
-  $('legend').querySelector('ul').append(li);
+  setHint('Parcely se načítají ze serveru, spusťte aplikaci přes docker compose.');
 }
 
 if (new URLSearchParams(location.search).has('debug')) {
