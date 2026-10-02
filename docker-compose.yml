@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: parcely
+      POSTGRES_USER: parcely
+      POSTGRES_PASSWORD: parcely
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U parcely -d parcely"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    environment:
+      DB_DSN: "pgsql:host=db;port=5432;dbname=parcely"
+      DB_USER: parcely
+      DB_PASSWORD: parcely
+      PARCEL_MIN_ZOOM: "14"
+    volumes:
+      - tiles:/var/cache/tiles
+
+  # GDAL, used by bin/import-cuzk.sh
+  importer:
+    image: ghcr.io/osgeo/gdal:ubuntu-small-3.9.2
+    profiles: ["tools"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  tiles:

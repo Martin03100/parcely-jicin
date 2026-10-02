@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mapa parcel – okres Jičín</title>
+  <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <div id="map" role="application" aria-label="Mapa parcel"></div>
+
+  <aside id="panel" aria-label="Panel s informacemi">
+    <form id="search" role="search" autocomplete="off">
+      <label for="q">Hledat parcelu podle čísla</label>
+      <div class="row">
+        <input id="q" name="q" type="search" inputmode="numeric" placeholder="např. 123 nebo 123/4">
+        <button type="submit">Hledat</button>
+      </div>
+      <ul id="results" hidden></ul>
+    </form>
+
+    <section id="detail" aria-live="polite" hidden>
+      <h2>Parcela <span id="d-label"></span></h2>
+      <dl>
+        <dt>Katastrální území</dt><dd id="d-ku"></dd>
+        <dt>Výměra</dt><dd id="d-area"></dd>
+        <dt>Druh pozemku</dt><dd id="d-type"></dd>
+        <dt>Způsob využití</dt><dd id="d-use"></dd>
+        <dt>Zdroj dat</dt><dd id="d-source"></dd>
+      </dl>
+      <a id="d-kn" href="#" target="_blank" rel="noopener noreferrer" hidden>Otevřít v Nahlížení do KN</a>
+    </section>
+    <p id="hint">Klikni na parcelu (od přiblížení ~14) nebo ji vyhledej. Při oddálení vidíš jen obrysy katastrálních území.</p>
+
+    <details id="legend">
+      <summary>Legenda – druh pozemku</summary>
+      <ul></ul>
+    </details>
+  </aside>
+
+  <div id="fps" hidden></div>
+</body>
+</html>
