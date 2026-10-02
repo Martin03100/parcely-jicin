@@ -1,6 +1,6 @@
 -- Synthetic parcels around Jičín (source = 'demo') on a jittered grid with shared vertices.
 -- Default 300 x 300; size: psql -v cols=500 -v rows=500 -f db/seed_demo.sql
-if :{?cols} \else \set cols 300 \endif
+\if :{?cols} \else \set cols 300 \endif
 \if :{?rows} \else \set rows 300 \endif
 
 BEGIN;

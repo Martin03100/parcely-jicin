@@ -25,6 +25,7 @@ if (PHP_SAPI === 'cli-server' && $path !== '/' && is_file(__DIR__ . $path)) {
 }
 if ($path === '/') {
     header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-cache');
     readfile(__DIR__ . '/index.html');
 
     return true;

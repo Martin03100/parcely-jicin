@@ -49,7 +49,7 @@ browser (MapLibre) ── /tiles/{z}/{x}/{y}.pbf ──► TileController ──
 
 - **Imported data, not live WFS.** The data is imported once into PostGIS, so the app does not depend on the speed or availability of the ČÚZK service.
 - **Vector tiles.** The browser only loads what is in view, so performance does not depend on the total parcel count.
-- **Tiles built in PostGIS.** `ST_AsMVT` clips, quantizes and encodes the tiles using the GiST index. Geometry is stored in EPSG:3857, so nothing is reprojected at runtime.
+- **Tiles built in PostGIS.** `ST_AsMVT` clips, quantizes and encodes the tiles using the GiST index. Geometry is stored in EPSG:3857, so nothing is reprojected at runtime. Rows are stored in spatial order, so one tile reads few disk pages.
 - **Two levels of detail.** Below zoom 14 the map shows cadastral area outlines, and individual parcels from zoom 14.
 - **Caching.** Tiles are cached gzipped on disk and served with `ETag` and `Cache-Control`. The cache is cleared on import. Empty tiles return `204` and are not stored on disk.
 - **No framework.** Four endpoints only need a small router and a PSR-4 autoloader.

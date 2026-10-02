@@ -8,7 +8,7 @@ psql_db() { docker compose exec -T db psql -U parcely -d parcely -v ON_ERROR_STO
 run_sql_file() { psql_db "${@:2}" < "$1"; }
 
 finalize() {
-  echo "==> Outlines, CLUSTER, ANALYZE"
+  echo "==> Outlines"
   run_sql_file db/finalize.sql
   docker compose exec -T app sh -c 'rm -rf /var/cache/tiles/*'
 }

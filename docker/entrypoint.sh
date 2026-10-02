@@ -24,15 +24,16 @@ if [ "${DB_AUTO_INIT:-0}" = "1" ] && [ -n "${DATABASE_URL:-}" ]; then
     curl -sSfL --retry 5 -o "$f" "$1" && gzip -t "$f" || { echo "Download failed" >&2; return 1; }
     echo "==> Loading parcels"
     { cat "$APP/db/load_begin.sql"; gunzip -c "$f"; printf '%s\n' '\.'; cat "$APP/db/load_end.sql"; } \
-      | psql_db -v "data_url=$1" || { echo "Load failed" >&2; return 1; }
+      | psql_db || { echo "Load failed" >&2; return 1; }
     rm -f "$f"
-    psql_db -f "$APP/db/finalize.sql" || return 1
+    psql_db -f "$APP/db/finalize.sql" || { echo "Finalize failed" >&2; return 1; }
+    echo "INSERT INTO app_meta VALUES ('data_loaded', :'url') ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value;" | psql_db -v "url=$1"
     rm -rf "${TILE_CACHE_DIR:?}"/*
     echo "==> Loaded $(psql_db -tAc 'SELECT count(*) FROM parcels') parcels"
   }
 
   if [ -n "${DATA_URL:-}" ]; then
-    loaded=$(psql_db -tAc "SELECT value FROM app_meta WHERE key = 'data_url'")
+    loaded=$(psql_db -tAc "SELECT value FROM app_meta WHERE key = 'data_loaded'")
     if [ "$loaded" != "$DATA_URL" ]; then
       load_data "$DATA_URL" &
     fi
