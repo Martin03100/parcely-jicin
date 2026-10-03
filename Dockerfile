@@ -15,6 +15,7 @@ RUN sed -i 's/^Listen 80$/Listen ${PORT}/' /etc/apache2/ports.conf
 
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 COPY . /var/www/app
+WORKDIR /var/www/app
 
 RUN mkdir -p /var/cache/tiles && chown www-data:www-data /var/cache/tiles
 ENV TILE_CACHE_DIR=/var/cache/tiles
